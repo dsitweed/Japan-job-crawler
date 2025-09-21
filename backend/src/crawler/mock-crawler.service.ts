@@ -86,27 +86,27 @@ export class MockCrawlerService {
         {
           title: "フロントエンドエンジニア（React/Next.js）",
           description: `【業務内容】
-・Webアプリケーションのフロントエンド開発
-・UI/UXの改善・最適化
-・モバイル対応・レスポンシブ対応
-・パフォーマンス改善
+            ・Webアプリケーションのフロントエンド開発
+            ・UI/UXの改善・最適化
+            ・モバイル対応・レスポンシブ対応
+            ・パフォーマンス改善
 
-【技術スタック】
-・React, Next.js, TypeScript
-・TailwindCSS, Chakra UI
-・Jest, Testing Library
-・Vercel, AWS
+            【技術スタック】
+            ・React, Next.js, TypeScript
+            ・TailwindCSS, Chakra UI
+            ・Jest, Testing Library
+            ・Vercel, AWS
 
-【求める人材】
-・React開発経験2年以上
-・TypeScript経験
-・UI/UX意識の高い方
-・チーム開発経験
+            【求める人材】
+            ・React開発経験2年以上
+            ・TypeScript経験
+            ・UI/UX意識の高い方
+            ・チーム開発経験
 
-【働き方】
-・フルリモート可
-・フレックスタイム制
-・副業OK`,
+            【働き方】
+            ・フルリモート可
+            ・フレックスタイム制
+            ・副業OK`,
           location: "Tokyo / Full Remote",
           originalUrl: "https://jp.indeed.com/viewjob?jk=mock002",
           jobId: "mock002",

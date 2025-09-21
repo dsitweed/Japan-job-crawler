@@ -67,17 +67,46 @@ export class CrawlerService {
       }
 
       const page = await this.browser.newPage();
-      await page.setUserAgent(
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-      );
+
+      // Enhanced anti-detection measures
+      await page.setExtraHTTPHeaders({
+        "User-Agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        Accept:
+          "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+        "Accept-Language": "ja-JP,ja;q=0.9,en;q=0.8",
+        "Accept-Encoding": "gzip, deflate, br",
+        Connection: "keep-alive",
+        "Upgrade-Insecure-Requests": "1",
+      });
+
+      // Set viewport to common size
+      await page.setViewport({ width: 1366, height: 768 });
 
       for (let pageNum = 0; pageNum < pages; pageNum++) {
-        const url = `https://jp.indeed.com/jobs?q=${encodeURIComponent(searchQuery)}&start=${pageNum * 10}`;
+        const startParam = pageNum * 10;
+        const url = `https://jp.indeed.com/jobs?q=${encodeURIComponent(searchQuery)}&l=東京都&start=${startParam}`;
         this.logger.log(`Crawling page ${pageNum + 1}: ${url}`);
 
         try {
-          await page.goto(url, { waitUntil: "networkidle2", timeout: 30000 });
-          await this.randomDelay(2000, 4000);
+          // Navigate with longer timeout
+          await page.goto(url, {
+            waitUntil: "domcontentloaded",
+            timeout: 60000,
+          });
+
+          // Wait for content to load
+          await this.randomDelay(3000, 5000);
+
+          // Wait for job results to appear
+          try {
+            await page.waitForSelector(
+              "#searchform, .jobsearch-SerpJobCard, [data-jk]",
+              { timeout: 10000 }
+            );
+          } catch (e) {
+            this.logger.warn("Job selector not found, continuing anyway...");
+          }
 
           const content = await page.content();
           const jobs = await this.parseJobListPage(content);
@@ -89,10 +118,15 @@ export class CrawlerService {
               const detailedJob = await this.crawlJobDetail(page, job);
               allJobs.push(detailedJob);
               this.logger.log(`Crawled job: ${detailedJob.title}`);
-              await this.randomDelay(1000, 2000);
+              await this.randomDelay(2000, 4000); // Longer delay between job details
             } catch (error) {
               this.logger.error(`Error crawling job detail: ${error.message}`);
             }
+          }
+
+          // Add delay between pages
+          if (pageNum < pages - 1) {
+            await this.randomDelay(5000, 8000);
           }
         } catch (error) {
           this.logger.error(
@@ -109,6 +143,8 @@ export class CrawlerService {
       this.logger.error(`Error in crawlIndeedJobs: ${error.message}`);
     }
 
+    this.logger.fatal(allJobs);
+
     return allJobs;
   }
 
@@ -118,27 +154,90 @@ export class CrawlerService {
     const $ = load(html);
     const jobs: Partial<CrawledJobData>[] = [];
 
-    $("[data-jk]").each((index, element) => {
-      const $element = $(element);
-      const jobId = $element.attr("data-jk");
-      const titleElement = $element.find('[data-testid="job-title"] a');
-      const title = titleElement.text().trim();
-      const relativeUrl = titleElement.attr("href");
+    // Exact selectors based on test.html analysis
+    const jobContainer = '[data-testid="slider_item"]';
+    const jobElements = $(jobContainer);
 
-      if (jobId && title && relativeUrl) {
+    this.logger.debug(
+      `Found ${jobElements.length} job elements using exact selector`
+    );
+
+    if (jobElements.length === 0) {
+      this.logger.warn("No job elements found with exact selector");
+      return jobs;
+    }
+
+    jobElements.each((index, element) => {
+      const $element = $(element);
+
+      // Get job ID from data-jk attribute (exact match from test.html)
+      const jobLinkElement = $element.find("a[data-jk]").first();
+      const jobId = jobLinkElement.attr("data-jk");
+
+      // Get title from exact selector structure
+      const titleElement = $element.find("h2.jobTitle span[title]").first();
+      const title = titleElement.attr("title") || titleElement.text().trim();
+
+      // Get URL from job link
+      const relativeUrl = jobLinkElement.attr("href");
+
+      // Get company name from exact testid
+      const companyElement = $element
+        .find('[data-testid="company-name"]')
+        .first();
+      const companyName = companyElement.text().trim();
+
+      // Get location from exact structure
+      const locationSelectors = [
+        '[data-testid="icon-location"] + div', // For icon-location structure
+        '[data-testid="text-location"]', // For text-location structure
+      ];
+
+      let location = "";
+      for (const locationSelector of locationSelectors) {
+        const locationElement = $element.find(locationSelector).first();
+        if (locationElement.length > 0) {
+          location = locationElement.text().trim();
+          if (location) break;
+        }
+      }
+
+      // Get salary if available (from attribute snippet)
+      const salaryElement = $element
+        .find('[data-testid="attribute_snippet_testid"]')
+        .first();
+      let salaryInfo = "";
+      if (salaryElement.length > 0) {
+        const salaryText = salaryElement.text().trim();
+        if (
+          salaryText &&
+          (salaryText.includes("円") || salaryText.includes("万"))
+        ) {
+          salaryInfo = salaryText;
+        }
+      }
+
+      this.logger.debug(
+        `Job ${index}: ID=${jobId}, Title=${title}, Company=${companyName}, Location=${location}`
+      );
+
+      if (title && jobId && relativeUrl) {
+        const fullUrl = relativeUrl.startsWith("http")
+          ? relativeUrl
+          : `https://jp.indeed.com${relativeUrl}`;
+
         jobs.push({
           jobId,
           title,
-          originalUrl: `https://jp.indeed.com${relativeUrl}`,
-          companyName: $element
-            .find('[data-testid="company-name"]')
-            .text()
-            .trim(),
-          location: $element.find('[data-testid="job-location"]').text().trim(),
+          originalUrl: fullUrl,
+          companyName,
+          location,
+          salaryInfo: salaryInfo ? { display: salaryInfo } : undefined,
         });
       }
     });
 
+    this.logger.log(`Successfully parsed ${jobs.length} jobs from page`);
     return jobs;
   }
 
@@ -147,17 +246,58 @@ export class CrawlerService {
     basicJob: Partial<CrawledJobData>
   ): Promise<CrawledJobData> {
     try {
-      await page.goto(basicJob.originalUrl, { waitUntil: "networkidle2" });
+      this.logger.log(`Crawling job detail: ${basicJob.originalUrl}`);
+
+      await page.goto(basicJob.originalUrl, {
+        waitUntil: "domcontentloaded",
+        timeout: 30000,
+      });
+
+      // Wait for page to load completely
+      await this.randomDelay(2000, 4000);
+
       const content = await page.content();
       const $ = load(content);
 
-      // Extract job description
-      const description =
-        $("#jobDescriptionText").text().trim() ||
-        $(".jobsearch-jobDescriptionText").text().trim();
+      // Extract job description with multiple selectors
+      const descriptionSelectors = [
+        "#jobDescriptionText",
+        ".jobsearch-jobDescriptionText",
+        '[data-testid="jobDescriptionText"]',
+        ".jobDescription",
+        ".jobsearch-JobMetadataHeader-container + div",
+      ];
 
-      // Parse salary information
-      const salaryText = $('[data-testid="job-compensation"]').text().trim();
+      let description = "";
+      for (const selector of descriptionSelectors) {
+        const element = $(selector);
+        if (element.length > 0) {
+          description = element.text().trim();
+          if (description && description.length > 50) break;
+        }
+      }
+
+      // Enhanced salary extraction
+      const salarySelectors = [
+        '[data-testid="job-compensation"]',
+        ".salaryText",
+        ".salary",
+        '[data-testid="salaries-section"]',
+        '.jobsearch-JobMetadataHeader-item:contains("円")',
+      ];
+
+      let salaryText = "";
+      for (const selector of salarySelectors) {
+        const element = $(selector);
+        if (element.length > 0) {
+          const text = element.text().trim();
+          if (text && (text.includes("円") || text.includes("万"))) {
+            salaryText = text;
+            break;
+          }
+        }
+      }
+
       const salaryInfo = this.parseSalaryInfo(salaryText);
 
       // Extract company information and analyze
@@ -171,10 +311,12 @@ export class CrawlerService {
       const requirements = this.parseRequirements(description);
       const benefits = this.parseBenefits(description);
 
+      this.logger.log(`Successfully crawled job detail: ${basicJob.title}`);
+
       return {
         ...basicJob,
         description,
-        salaryInfo,
+        salaryInfo: salaryInfo || basicJob.salaryInfo,
         companyInfo,
         requirements,
         benefits,
