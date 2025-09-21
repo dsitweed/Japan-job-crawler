@@ -12,14 +12,15 @@ export class CrawlerController {
   @Post("crawl")
   async crawlJobs(
     @Query("search") search: string = "バックエンドエンジニア",
-    @Query("pages") pages: string = "1"
+    @Query("pages") pages: string = "1",
+    @Query("location") location: string = "東京都"
   ) {
     const numPages = Math.min(parseInt(pages), 10); // Limit to 10 pages max
 
     try {
       const jobs = await this.crawlerService.crawlIndeedJobs(
         search,
-        "東京都",
+        location,
         numPages
       );
       await this.crawlerService.saveJobsToDatabase(jobs);

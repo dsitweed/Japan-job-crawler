@@ -1,6 +1,14 @@
 # 🎉 Crawler Japan Job from Indeed Project 
 
-## 🚀 Cách chạy dự án:
+## � Giao diện ứng dụng
+
+<div align="center">
+<img src="./images/FE-UI.png" alt="Frontend UI Dashboard" width="800">
+</div>
+
+<p align="center"><em>Giao diện dashboard hiển thị danh sách jobs với đầy đủ thông tin và tính năng tìm kiếm</em></p>
+
+## �🚀 Cách chạy dự án:
 
 ### 1. Khởi động Database
 ```bash
