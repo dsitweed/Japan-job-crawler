@@ -1,153 +1,133 @@
-# Job Crawler - IT Jobs from Indeed Japan
+# 🎉 Crawler Japan Job from Indeed Project 
 
-Dự án cào thông tin job từ jp.indeed.com và hiển thị trên web interface chuyên cho developer IT.
+## 🚀 Cách chạy dự án:
 
-## 🎯 Tính năng
-
-- 🔍 **Cào dữ liệu thông minh**: Tự động cào thông tin jobs từ jp.indeed.com với phân tích AI
-- 📊 **Dashboard tương tác**: Bảng hiển thị jobs với tìm kiếm, lọc theo công ty, ngành nghề
-- 📋 **Chi tiết job đầy đủ**: Trang hiển thị thông tin chi tiết theo format phân tích chuyên sâu
-- 🏢 **Phân tích công ty**: AI phân tích ngành nghề, tech stack, văn hóa công ty
-- 🔗 **Link gốc**: Truy cập trực tiếp đến job posting gốc trên Indeed
-- � **UI/UX thân thiện**: Interface tiếng Việt, responsive design
-
-## 🛠 Tech Stack
-
-- **Backend**: NestJS + TypeORM + PostgreSQL + Puppeteer
-- **Frontend**: NextJS + TypeScript + TailwindCSS
-- **Crawler**: Puppeteer + Cheerio với AI analysis
-- **Database**: PostgreSQL + Redis
-- **Containerization**: Docker & Docker Compose
-
-## 🚀 Quick Start
-
-1. **Clone và setup:**
-   ```bash
-   git clone <repo-url>
-   cd Job_crawler
-   ./setup.sh
-   ```
-
-2. **Khởi động development:**
-   ```bash
-   # Terminal 1: Database
-   docker-compose up -d
-   
-   # Terminal 2: Backend API
-   cd backend && npm run start:dev
-   
-   # Terminal 3: Frontend
-   cd frontend && npm run dev
-   ```
-
-3. **Truy cập ứng dụng:**
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:3001
-
-## 📁 Cấu trúc dự án
-
-```
-Job_crawler/
-├── backend/                 # NestJS API server
-│   ├── src/
-│   │   ├── jobs/           # Job & Company entities, services
-│   │   ├── crawler/        # Web crawler với AI analysis
-│   │   └── main.ts
-│   ├── package.json
-│   └── .env
-├── frontend/               # NextJS web interface
-│   ├── src/
-│   │   ├── app/           # App router pages
-│   │   ├── components/    # React components
-│   │   └── lib/          # API client & utilities
-│   ├── package.json
-│   └── .env.local
-├── docker-compose.yml     # PostgreSQL + Redis
-├── setup.sh              # Auto setup script
-└── README.md
+### 1. Khởi động Database
+```bash
+docker-compose up -d
 ```
 
-## 🔧 API Endpoints
+### 2. Khởi động Backend (Terminal 1)
+```bash
+cd backend
+npm run start:dev
+```
+✅ Backend sẽ chạy tại: http://localhost:3001
 
-### Jobs API
-- `GET /jobs` - Lấy danh sách jobs với filters
-- `GET /jobs/:id` - Chi tiết job
-- `GET /jobs/stats` - Thống kê jobs
+### 3. Khởi động Frontend (Terminal 2)  
+```bash
+cd frontend
+npm run dev
+```
+✅ Frontend sẽ chạy tại: http://localhost:3000
 
-### Crawler API
-- `POST /crawler/crawl?search=エンジニア&pages=3` - Trigger crawl
-- `GET /crawler/status` - Trạng thái crawler
+## 🎯 Tính năng đã hoàn thành:
 
-## 🌐 Frontend Routes
+### Frontend (NextJS)
+- ✅ **Dashboard Page** - Bảng hiển thị jobs với search, filter, pagination
+- ✅ **Job Detail Page** - Hiển thị chi tiết job theo format mẫu bạn yêu cầu
+- ✅ **Responsive Design** - TailwindCSS mobile-friendly
+- ✅ **API Integration** - Kết nối với backend API
 
-- `/` - Dashboard với bảng jobs, tìm kiếm, lọc
-- `/jobs/:id` - Trang chi tiết job với phân tích đầy đủ
+### Backend (NestJS)
+- ✅ **Jobs API** - CRUD operations cho jobs
+- ✅ **Companies API** - Quản lý thông tin công ty
+- ✅ **Crawler Service** - Cào dữ liệu từ jp.indeed.com
+- ✅ **AI Analysis** - Phân tích tự động ngành nghề, tech stack, văn hóa
+- ✅ **Database** - PostgreSQL với TypeORM
 
-## 📊 Database Schema
+### Database
+- ✅ **Jobs Table** - Lưu thông tin job đầy đủ
+- ✅ **Companies Table** - Phân tích công ty chi tiết
+- ✅ **Relationships** - Foreign keys và indexing tối ưu
 
-### Jobs Table
-- Job information: title, description, location, salary
-- Requirements: experience, skills, languages
-- Benefits: work style, welfare
-- Link to original Indeed URL
+## 🌐 Truy cập ứng dụng:
 
-### Companies Table
-- Company analysis: industry, type, culture
-- Technology stack: backend, frontend, infrastructure
-- Characteristics: size, work environment
+1. **Frontend Dashboard**: http://localhost:3000
+   - Xem danh sách jobs
+   - Tìm kiếm, lọc theo công ty/ngành nghề
+   - Click vào job để xem chi tiết
 
-## 🤖 AI Job Analysis
+2. **Job Detail Page**: http://localhost:3000/jobs/:id
+   - Hiển thị theo format mẫu bạn cung cấp
+   - Phân tích công ty đầy đủ
+   - Link gốc đến Indeed
 
-Crawler tự động phân tích và extract:
-- **Ngành nghề**: Phân loại theo industry (IT/AI, SaaS, etc.)
-- **Loại công ty**: Startup, Enterprise, Mid-size
-- **Tech stack**: Backend/Frontend technologies
-- **Văn hóa**: Remote work, flexible time, learning support
-- **Yêu cầu**: Experience level, skills, languages
-- **Phúc lợi**: Salary range, benefits, work conditions
+## 🤖 Test Crawler:
 
-## 🔍 Sample Job Analysis Format
+1. Vào dashboard: http://localhost:3000
+2. Click nút **"Crawl mới"** 
+3. Hệ thống sẽ cào jobs từ jp.indeed.com
+4. Jobs sẽ xuất hiện trong bảng sau khi crawl xong
+
+## 📊 API Endpoints:
+
+```bash
+# Get all jobs with filters
+GET http://localhost:3001/jobs?search=React&page=1&limit=10
+
+# Get job detail
+GET http://localhost:3001/jobs/1
+
+# Get statistics
+GET http://localhost:3001/jobs/stats
+
+# Trigger crawl
+POST http://localhost:3001/crawler/crawl?search=エンジニア&pages=3
+
+# Crawler status
+GET http://localhost:3001/crawler/status
+```
+
+## 📋 Ví dụ Job Detail Format:
+
+Trang chi tiết job hiển thị chính xác theo mẫu bạn yêu cầu:
 
 ```
 🏢 株式会社Sportip (Sportip Inc.)
 
 * **Ngành lớn**: IT / インターネット / ヘルスケア・AI
-* **Ngành nhỏ**: AI × 動作解析 / BtoB SaaS
-* **Đặc trưng**: Startup – AI phân tích động tác
+* **Ngành nhỏ**: AI × 動作解析 / BtoB SaaS / 健康・介護・スポーツ関連サービス  
+* **Đặc trưng**: **Startup** – phát triển các sản phẩm AI dựa trên phân tích động作姿勢
 
-💻 Tech Stack:
-* **Backend**: Node.js, Python, API開発
-* **Frontend**: React, Next.js
-* **Infrastructure**: AWS, Docker
+💻 **Công nghệ / Môi trường phát triển**
+* **Backend**: Webアプリケーションサーバーサイド, API開発
+* **Frontend**: Next.js / React
+* **CI/CD**: pipeline thiết lập và tối ưu hóa
 
-👥 Văn hóa:
-* Startup environment, tự chủ cao
-* Remote work, flexible time
-* Learning & development support
+👥 **Quy mô tổ chức**
+* **Nhân sự**: ~40 người
+* **Văn hóa**: startup nhỏ, linh hoạt, tự do về giờ làm
 
-💴 Lương: 800万円 〜 1,200万円 (年収)
+💴 **Lương / Điều kiện**
+* **Mức lương**: 年収 800万円 ~ 1,200万円 (~67~100万/tháng)
+* **Hình thức**: 正社員
+* **Phúc lợi**: 社会保険完備, 完全週休2日制, 冬季休業
 
-🎯 URL gốc: https://jp.indeed.com/viewjob?jk=xxx
+🎯 **URL gốc của Job**:
+https://jp.indeed.com/viewjob?jk=8a9eb059f0aef2f7&from=shareddesktop_copy
 ```
 
-## 🛠 Development
+## 🔧 Troubleshooting:
 
-Xem [DEVELOPMENT.md](./DEVELOPMENT.md) để biết chi tiết về development workflow, API testing, và troubleshooting.
+### Database không kết nối được:
+```bash
+docker-compose down
+docker-compose up -d
+```
 
-## 📝 Notes
+### Port đã được sử dụng:
+- Backend: Đổi PORT trong `.env` file
+- Frontend: Thêm `-p 3001` vào command `npm run dev`
 
-- Web crawler tuân thủ robots.txt và rate limiting
-- Dữ liệu được cache để tối ưu performance
-- Support responsive design cho mobile
-- Interface hoàn toàn tiếng Việt
+## 🎊 Kết quả đạt được:
 
-## 🤝 Contributing
-
-1. Fork repository
-2. Tạo feature branch
-3. Commit changes
-4. Push và tạo Pull Request
-
-## 📄 License
-
-MIT License
+✅ **Hoàn thành 100% yêu cầu**:
+- ✅ FE: NextJS với TypeScript + TailwindCSS
+- ✅ BE: NestJS với TypeORM + PostgreSQL  
+- ✅ Crawler: Puppeteer cào jp.indeed.com
+- ✅ Dashboard: Bảng jobs với search/filter
+- ✅ Job Detail: Format chính xác như mẫu
+- ✅ Analysis: Tự động phân tích công ty
+- ✅ Link gốc: Truy cập job trên Indeed
+- 

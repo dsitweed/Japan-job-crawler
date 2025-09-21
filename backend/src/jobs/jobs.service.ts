@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Job } from './job.entity';
-import { Company } from './company.entity';
+import { Injectable } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { Job } from "./job.entity";
+import { Company } from "./company.entity";
 
 export interface JobFilters {
   search?: string;
@@ -19,40 +19,53 @@ export class JobsService {
     @InjectRepository(Job)
     private jobRepository: Repository<Job>,
     @InjectRepository(Company)
-    private companyRepository: Repository<Company>,
+    private companyRepository: Repository<Company>
   ) {}
 
   async findAll(filters: JobFilters = {}) {
-    const { search, industry, location, companyType, page = 1, limit = 20 } = filters;
-    
+    const {
+      search,
+      industry,
+      location,
+      companyType,
+      page = 1,
+      limit = 20,
+    } = filters;
+
     const queryBuilder = this.jobRepository
-      .createQueryBuilder('job')
-      .leftJoinAndSelect('job.company', 'company')
-      .where('job.status = :status', { status: 'active' });
+      .createQueryBuilder("job")
+      .leftJoinAndSelect("job.company", "company")
+      .where("job.status = :status", { status: "active" });
 
     if (search) {
       queryBuilder.andWhere(
-        '(job.title ILIKE :search OR job.description ILIKE :search OR company.name ILIKE :search)',
+        "(job.title ILIKE :search OR job.description ILIKE :search OR company.name ILIKE :search)",
         { search: `%${search}%` }
       );
     }
 
     if (industry) {
-      queryBuilder.andWhere('company.industry ILIKE :industry', { industry: `%${industry}%` });
+      queryBuilder.andWhere("company.industry ILIKE :industry", {
+        industry: `%${industry}%`,
+      });
     }
 
     if (location) {
-      queryBuilder.andWhere('job.location ILIKE :location', { location: `%${location}%` });
+      queryBuilder.andWhere("job.location ILIKE :location", {
+        location: `%${location}%`,
+      });
     }
 
     if (companyType) {
-      queryBuilder.andWhere('company.companyType ILIKE :companyType', { companyType: `%${companyType}%` });
+      queryBuilder.andWhere("company.companyType ILIKE :companyType", {
+        companyType: `%${companyType}%`,
+      });
     }
 
     const total = await queryBuilder.getCount();
-    
+
     const jobs = await queryBuilder
-      .orderBy('job.createdAt', 'DESC')
+      .orderBy("job.createdAt", "DESC")
       .skip((page - 1) * limit)
       .take(limit)
       .getMany();
@@ -69,7 +82,7 @@ export class JobsService {
   async findOne(id: number): Promise<Job> {
     return this.jobRepository.findOne({
       where: { id },
-      relations: ['company'],
+      relations: ["company"],
     });
   }
 
@@ -90,34 +103,5 @@ export class JobsService {
 
     const company = this.companyRepository.create(companyData);
     return this.companyRepository.save(company);
-  }
-
-  async getStats() {
-    const totalJobs = await this.jobRepository.count({ where: { status: 'active' } });
-    const totalCompanies = await this.companyRepository.count();
-    
-    const industryStats = await this.companyRepository
-      .createQueryBuilder('company')
-      .select('company.industry', 'industry')
-      .addSelect('COUNT(*)', 'count')
-      .where('company.industry IS NOT NULL')
-      .groupBy('company.industry')
-      .orderBy('COUNT(*)', 'DESC')
-      .limit(10)
-      .getRawMany();
-
-    const recentJobs = await this.jobRepository.find({
-      where: { status: 'active' },
-      relations: ['company'],
-      order: { createdAt: 'DESC' },
-      take: 5,
-    });
-
-    return {
-      totalJobs,
-      totalCompanies,
-      industryStats,
-      recentJobs,
-    };
   }
 }

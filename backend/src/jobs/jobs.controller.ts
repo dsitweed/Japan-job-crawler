@@ -1,7 +1,7 @@
-import { Controller, Get, Post, Param, Query, Body } from '@nestjs/common';
-import { JobsService, JobFilters } from './jobs.service';
+import { Controller, Get, Post, Param, Query, Body } from "@nestjs/common";
+import { JobsService, JobFilters } from "./jobs.service";
 
-@Controller('jobs')
+@Controller("jobs")
 export class JobsController {
   constructor(private readonly jobsService: JobsService) {}
 
@@ -10,13 +10,8 @@ export class JobsController {
     return this.jobsService.findAll(filters);
   }
 
-  @Get('stats')
-  async getStats() {
-    return this.jobsService.getStats();
-  }
-
-  @Get(':id')
-  async findOne(@Param('id') id: string) {
+  @Get(":id")
+  async findOne(@Param("id") id: string) {
     return this.jobsService.findOne(+id);
   }
 
