@@ -17,14 +17,19 @@ export class CrawlerController {
     const numPages = Math.min(parseInt(pages), 10); // Limit to 10 pages max
 
     try {
-      const jobs = await this.crawlerService.crawlIndeedJobs(search, numPages);
-      // await this.crawlerService.saveJobsToDatabase(jobs);
+      const jobs = await this.crawlerService.crawlIndeedJobs(
+        search,
+        "東京都",
+        numPages
+      );
+      await this.crawlerService.saveJobsToDatabase(jobs);
 
       return {
         message: `Successfully crawled and saved ${jobs.length} jobs`,
         jobsFound: jobs.length,
         searchQuery: search,
         pagesScanned: numPages,
+        jobs: jobs,
       };
     } catch (error) {
       return {

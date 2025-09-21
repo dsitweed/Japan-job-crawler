@@ -14,7 +14,14 @@ import {
   Star,
 } from "lucide-react";
 import { jobsApi, Job } from "@/lib/api";
-import { formatSalary, formatDate, getCompanyTypeLabel } from "@/lib/utils";
+import {
+  formatSalary,
+  formatDate,
+  getCompanyTypeLabel,
+  getExperienceYears,
+  getCompanySize,
+  getRoleType,
+} from "@/lib/utils";
 
 export default function JobDetailPage({ params }: { params: { id: string } }) {
   const [job, setJob] = useState<Job | null>(null);
@@ -132,6 +139,63 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                 <span>{formatSalary(job.salaryInfo)}</span>
               </div>
             </div>
+
+            {/* Job Classification Tags */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <div className="text-center">
+                <span className="text-sm font-medium text-gray-500 block mb-1">
+                  Kinh nghiệm yêu cầu
+                </span>
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800">
+                  {getExperienceYears(job.requirements?.experience)}
+                </span>
+              </div>
+              <div className="text-center">
+                <span className="text-sm font-medium text-gray-500 block mb-1">
+                  Loại công ty
+                </span>
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                  {getCompanySize(job.company)}
+                </span>
+              </div>
+              <div className="text-center">
+                <span className="text-sm font-medium text-gray-500 block mb-1">
+                  Vai trò kỹ thuật
+                </span>
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+                  {getRoleType(job)}
+                </span>
+              </div>
+            </div>
+
+            {/* Job Status Tags */}
+            <div className="flex flex-wrap gap-2 mb-4">
+              {job.jobMetadata?.employmentType && (
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+                  {job.jobMetadata.employmentType}
+                </span>
+              )}
+              {job.jobMetadata?.isSponsored && (
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                  スポンサー
+                </span>
+              )}
+              {job.jobMetadata?.isUrgent && (
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                  急募
+                </span>
+              )}
+              {job.jobMetadata?.respondsQuickly && (
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                  返信率高い
+                </span>
+              )}
+              {job.jobMetadata?.isNewJob && (
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                  新着
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Company Analysis Section */}
@@ -160,9 +224,14 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                 </div>
                 <div>
                   <span className="font-medium">Đặc trưng:</span>{" "}
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                    {getCompanyTypeLabel(job.company.companyType)}
-                  </span>
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                      {getCompanyTypeLabel(job.company.companyType)}
+                    </span>
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                      {getCompanySize(job.company)}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -276,25 +345,67 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                     🎯 Yêu cầu
                   </h3>
                   <div className="space-y-2">
-                    {job.requirements.experience && (
-                      <div>
-                        <span className="font-medium">Kinh nghiệm:</span>{" "}
+                    <div>
+                      <span className="font-medium">経験要件:</span>{" "}
+                      {job.requirements.experience ? (
                         <span>{job.requirements.experience}</span>
-                      </div>
-                    )}
+                      ) : (
+                        <div>Không có yêu cầu kinh nghiệm cụ thể.</div>
+                      )}
+                    </div>
+                    {job.requirements.skills &&
+                      job.requirements.skills.length > 0 && (
+                        <div>
+                          <span className="font-medium">技術スキル:</span>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {job.requirements.skills.map((skill, index) => (
+                              <span
+                                key={index}
+                                className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800"
+                              >
+                                {skill}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     {job.requirements.languages &&
                       job.requirements.languages.length > 0 && (
                         <div>
-                          <span className="font-medium">Ngôn ngữ:</span>
+                          <span className="font-medium">言語要件:</span>
                           <div className="flex flex-wrap gap-1 mt-1">
                             {job.requirements.languages.map((lang, index) => (
                               <span
                                 key={index}
-                                className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800"
+                                className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-800"
                               >
                                 {lang}
                               </span>
                             ))}
+                          </div>
+                        </div>
+                      )}
+                    {job.requirements.education && (
+                      <div>
+                        <span className="font-medium">学歴要件:</span>{" "}
+                        <span>{job.requirements.education}</span>
+                      </div>
+                    )}
+                    {job.requirements.certification &&
+                      job.requirements.certification.length > 0 && (
+                        <div>
+                          <span className="font-medium">資格:</span>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {job.requirements.certification.map(
+                              (cert, index) => (
+                                <span
+                                  key={index}
+                                  className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-orange-100 text-orange-800"
+                                >
+                                  {cert}
+                                </span>
+                              )
+                            )}
                           </div>
                         </div>
                       )}
@@ -306,28 +417,92 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
               {job.benefits && (
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
-                    💼 Phúc lợi
+                    💼 Phúc lợi & Đãi ngộ
                   </h3>
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {job.benefits.workStyle && (
                       <div>
-                        <span className="font-medium">Hình thức làm việc:</span>{" "}
-                        <span>{job.benefits.workStyle}</span>
+                        <span className="font-medium">Hình thức làm việc:</span>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {(Array.isArray(job.benefits.workStyle)
+                            ? job.benefits.workStyle
+                            : [job.benefits.workStyle]
+                          ).map((style, index) => (
+                            <span
+                              key={index}
+                              className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800"
+                            >
+                              {style}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     )}
                     {job.benefits.welfare &&
                       job.benefits.welfare.length > 0 && (
                         <div>
-                          <span className="font-medium">Phúc lợi:</span>
-                          <ul className="list-disc list-inside mt-1 space-y-1">
+                          <span className="font-medium">福利厚生:</span>
+                          <div className="flex flex-wrap gap-1 mt-1">
                             {job.benefits.welfare.map((benefit, index) => (
-                              <li key={index} className="text-sm">
+                              <span
+                                key={index}
+                                className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800"
+                              >
                                 {benefit}
-                              </li>
+                              </span>
                             ))}
-                          </ul>
+                          </div>
                         </div>
                       )}
+                    {job.benefits.vacation && (
+                      <div>
+                        <span className="font-medium">休暇制度:</span>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {(Array.isArray(job.benefits.vacation)
+                            ? job.benefits.vacation
+                            : [job.benefits.vacation]
+                          ).map((vacation, index) => (
+                            <span
+                              key={index}
+                              className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-800"
+                            >
+                              {vacation}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {job.benefits.development &&
+                      job.benefits.development.length > 0 && (
+                        <div>
+                          <span className="font-medium">研修・成長支援:</span>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {job.benefits.development.map((dev, index) => (
+                              <span
+                                key={index}
+                                className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-purple-100 text-purple-800"
+                              >
+                                {dev}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    {job.benefits.tags && job.benefits.tags.length > 0 && (
+                      <div>
+                        <span className="font-medium">特徴:</span>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {job.benefits.tags.map((tag, index) => (
+                            <span
+                              key={index}
+                              className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-indigo-100 text-indigo-800"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -378,8 +553,22 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
               </div>
               <div>
                 <span className="font-medium">Hình thức:</span>
-                <span className="ml-2">正社員</span>
+                <span className="ml-2">
+                  {job.jobMetadata?.employmentType || "正社員"}
+                </span>
               </div>
+              {job.jobMetadata?.workSchedule && (
+                <div>
+                  <span className="font-medium">勤務形態:</span>
+                  <span className="ml-2">{job.jobMetadata.workSchedule}</span>
+                </div>
+              )}
+              {job.salaryInfo?.type && (
+                <div>
+                  <span className="font-medium">雇用形態:</span>
+                  <span className="ml-2">{job.salaryInfo.type}</span>
+                </div>
+              )}
             </div>
           </div>
 

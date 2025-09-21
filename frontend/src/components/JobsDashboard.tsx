@@ -8,6 +8,9 @@ import {
   formatDate,
   getCompanyTypeLabel,
   getTechStackDisplay,
+  getExperienceYears,
+  getCompanySize,
+  getRoleType,
 } from "@/lib/utils";
 
 export default function JobsDashboard() {
@@ -117,6 +120,12 @@ export default function JobsDashboard() {
                   Công ty
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Kinh nghiệm
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Role
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Lương
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -134,7 +143,7 @@ export default function JobsDashboard() {
               {loading ? (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={8}
                     className="px-6 py-12 text-center text-gray-500"
                   >
                     <div className="flex items-center justify-center">
@@ -146,7 +155,7 @@ export default function JobsDashboard() {
               ) : jobs.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={8}
                     className="px-6 py-12 text-center text-gray-500"
                   >
                     Không tìm thấy công việc nào
@@ -165,6 +174,25 @@ export default function JobsDashboard() {
                             {job.title}
                           </a>
                         </h3>
+                        {/* Employment Type and Job Status */}
+                        <div className="flex flex-wrap gap-1 mb-2">
+                          {job.jobMetadata?.employmentType && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
+                              {job.jobMetadata.employmentType}
+                            </span>
+                          )}
+                          {job.jobMetadata?.isSponsored && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                              スポンサー
+                            </span>
+                          )}
+                          {job.jobMetadata?.isUrgent && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                              急募
+                            </span>
+                          )}
+                        </div>
+                        {/* Tech Stack */}
                         <div className="flex flex-wrap gap-1">
                           {getTechStackDisplay(job.company.technologies).map(
                             (tech, index) => (
@@ -177,6 +205,24 @@ export default function JobsDashboard() {
                             )
                           )}
                         </div>
+                        {/* Job Benefits Tags */}
+                        {job.benefits?.tags && job.benefits.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {job.benefits.tags.slice(0, 3).map((tag, index) => (
+                              <span
+                                key={index}
+                                className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                            {job.benefits.tags.length > 3 && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">
+                                +{job.benefits.tags.length - 3} more
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </td>
                     <td className="px-6 py-4">
@@ -184,11 +230,30 @@ export default function JobsDashboard() {
                         <p className="text-sm font-medium text-gray-900">
                           {job.company.name}
                         </p>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-gray-500 mb-1">
                           {job.company.industry}
                         </p>
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                          {getCompanyTypeLabel(job.company.companyType)}
+                        <div className="flex flex-wrap gap-1">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                            {getCompanyTypeLabel(job.company.companyType)}
+                          </span>
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                            {getCompanySize(job.company)}
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm text-gray-900">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">
+                          {getExperienceYears(job.requirements?.experience)}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm text-gray-900">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
+                          {getRoleType(job)}
                         </span>
                       </div>
                     </td>

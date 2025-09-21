@@ -22,17 +22,33 @@ export interface Job {
     currency?: string;
     period?: string;
     display?: string;
+    type?: string;
   };
   requirements?: {
     experience?: string;
     skills?: string[];
     education?: string;
     languages?: string[];
+    certification?: string[];
   };
   benefits?: {
-    workStyle?: string;
+    workStyle?: string | string[];
     welfare?: string[];
-    vacation?: string;
+    vacation?: string | string[];
+    allowances?: string[];
+    development?: string[];
+    tags?: string[];
+  };
+  jobMetadata?: {
+    employmentType?: string;
+    workSchedule?: string;
+    postedDate?: string;
+    isNewJob?: boolean;
+    isUrgent?: boolean;
+    companyRating?: number;
+    respondsQuickly?: boolean;
+    isSponsored?: boolean;
+    tags?: string[];
   };
   status: string;
   company: Company;
